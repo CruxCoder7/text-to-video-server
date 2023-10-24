@@ -1,4 +1,4 @@
-import axios, { AxiosError } from "axios"
+import axios from "axios"
 
 const headers = {
   "User-Agent":
@@ -11,7 +11,6 @@ type GPTResponse = {
 }
 
 export const GPT = async (input_text: string): Promise<GPTResponse> => {
-  console.log(input_text)
   const content = `${input_text}
                 Summarize the above text. Identify keywords from the text and 
                 generate prompts for each keyword that will help in finding an image thorugh google search.
@@ -34,9 +33,13 @@ export const GPT = async (input_text: string): Promise<GPTResponse> => {
   }
 
   try {
-    const response = await axios.post("https://chat.aivvm.com/api/chat", data, {
-      headers,
-    })
+    const response = await axios.post(
+      process.env.GPT_ENDPOINT as string,
+      data,
+      {
+        headers,
+      }
+    )
     if (typeof response.data !== "object") return await GPT(input_text)
     if (response.status === 429 || response.status === 500)
       return await GPT(input_text)

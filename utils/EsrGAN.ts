@@ -27,7 +27,7 @@ export class Esrgan {
     if (data.image === "") throw new Error("Please enter a valid image path")
 
     data = {
-      image: toB64(data.image || "https://www.segmind.com/butterfly.png"),
+      image: toB64(data.image),
       scale: data.scale || 2,
     }
 
