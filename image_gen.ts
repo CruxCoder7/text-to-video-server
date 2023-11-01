@@ -1,6 +1,8 @@
 import axios from "axios"
 import { createWriteStream, existsSync, mkdirSync } from "fs"
 import { join } from "path"
+import dotenv from "dotenv"
+dotenv.config()
 
 const isValidImage = (img: string) => {
   if (img.includes(".jpg") || img.includes(".jpeg") || img.includes(".png"))

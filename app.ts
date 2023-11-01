@@ -1,9 +1,11 @@
 import cors from "cors"
 import { config } from "dotenv"
 import express, { urlencoded } from "express"
+import { createUploadthingExpressHandler } from "uploadthing/express"
 import { GPT } from "./gpt"
 import processRouter from "./routes/process"
 import uploadRouter from "./routes/upload"
+import { fileUploadRouter } from "./routes/uploadthing"
 config()
 
 const app = express()
@@ -11,6 +13,13 @@ const app = express()
 app.use(cors())
 app.use(express.json())
 app.use(urlencoded({ extended: true }))
+
+app.use(
+  "/api/uploadthing",
+  createUploadthingExpressHandler({
+    router: fileUploadRouter,
+  })
+)
 
 app.use("/upload", uploadRouter)
 app.use("/process", processRouter)
@@ -33,7 +42,7 @@ app.get("/test", async (req, res) => {
   const cx = process.env.GOOGLE_SEARCH_API_CX as string
   const q = "backend"
   const data = await fetch(
-    `${process.env.GOOGLE_SEARCH_API_ENDPOINT}?key=${key}&cx=${cx}&q=${q}?key=${key}&cx=${cx}&q=${q}`
+    `${process.env.GOOGLE_SEARCH_API_ENDPOINT}?key=${key}&cx=${cx}&q=${q}`
   )
   const resp = await data.json()
   res.json(resp)

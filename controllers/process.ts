@@ -4,6 +4,8 @@ import PdfParse from "pdf-parse"
 import { EnhanceImage } from "../gan"
 import { GPT } from "../gpt"
 import { GenerateImages } from "../image_gen"
+import { Translate } from "../translation"
+import { TextToSpeech } from "../tts"
 
 class Processor {
   static async processPdf(req: Request, res: Response) {
@@ -22,6 +24,19 @@ class Processor {
     const img_prompts = gpt_response.image_prompts.map(
       (data: { prompt: string }) => data.prompt
     )
+
+    console.log(gpt_response)
+    console.log(img_prompts)
+
+    res.write(`data: Translating to various languages\n\n`)
+
+    const translated_text = await Translate(gpt_response.summarized_text, "ta")
+
+    res.write(`data: Generating Audio files\n\n`)
+
+    const audioData = await TextToSpeech(translated_text, "male", "ta")
+    console.log(audioData.audio[0].audioContent)
+
     res.write(`data: Generating Images\n\n`)
 
     let img_index = 1
@@ -46,6 +61,8 @@ class Processor {
       res.end()
     })
   }
+
+  static async processText(req: Request, res: Response) {}
 }
 
 export default Processor

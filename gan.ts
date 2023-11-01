@@ -1,6 +1,8 @@
 import fs from "fs"
 import path from "path"
 import { Esrgan } from "./utils/EsrGAN"
+import dotenv from "dotenv"
+dotenv.config()
 
 const apiKey = process.env.ESRGAN_API_KEY as string
 
@@ -52,5 +54,7 @@ export const EnhanceImage = async (image: string, count: number) => {
         writer.on("error", reject)
       })
     }
-  } catch (error) {}
+  } catch (error) {
+    console.log(error)
+  }
 }
