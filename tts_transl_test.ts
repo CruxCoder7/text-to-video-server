@@ -14,7 +14,7 @@
   }
 
   const translation_data = await fetch(
-    process.env.TRANSLATION_ENDPOINT as string,
+    "https://demo-api.models.ai4bharat.org/inference/translation/v2",
     {
       method: "POST",
       body: JSON.stringify(translation_payload),
@@ -35,15 +35,18 @@
     config: { gender: "male", language: { sourceLanguage: "ta" } },
   }
 
-  const audio_data = await fetch(process.env.TTS_ENDPOINT as string, {
-    method: "POST",
-    body: JSON.stringify(audio_payload),
-    headers: {
-      "User-Agent":
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/93.0.4577.82 Safari/537.36",
-      "Content-Type": "application/json",
-    },
-  })
+  const audio_data = await fetch(
+    "https://demo-api.models.ai4bharat.org/inference/tts",
+    {
+      method: "POST",
+      body: JSON.stringify(audio_payload),
+      headers: {
+        "User-Agent":
+          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/93.0.4577.82 Safari/537.36",
+        "Content-Type": "application/json",
+      },
+    }
+  )
 
   const audio_resp = await audio_data.json()
   console.log(audio_resp)

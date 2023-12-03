@@ -6,6 +6,8 @@ import { GPT } from "../gpt"
 import { GenerateImages } from "../image_gen"
 import { Translate } from "../translation"
 import { TextToSpeech } from "../tts"
+import { utapi } from "../routes/uploadthing"
+import prisma from "../db"
 
 class Processor {
   static async processPdf(req: Request, res: Response) {
@@ -13,12 +15,14 @@ class Processor {
     res.setHeader("Cache-Control", "no-cache")
 
     const pdfFilePath = req.file?.path
-    const pdfBuffer = fs.readFileSync(pdfFilePath!)
+    const pdfBuffer = fs.readFileSync(pdfFilePath as string)
     if (!pdfBuffer) throw new Error("Error parsing PDF")
 
     const pdfText = await PdfParse(pdfBuffer)
     if (!pdfText) throw new Error("Error in reading PDF")
     res.write(`data: Summarizing \n\n`)
+
+    await Processor.uploadFile(pdfFilePath as string)
 
     const gpt_response = await GPT(pdfText.text as unknown as string)
     const img_prompts = gpt_response.image_prompts.map(
@@ -36,6 +40,18 @@ class Processor {
 
     const audioData = await TextToSpeech(translated_text, "male", "ta")
     console.log(audioData.audio[0].audioContent)
+
+    await prisma.video.create({
+      data: {
+        audio_url: {
+          english: audioData.audio[0].audioContent,
+        },
+        content: "Video 2",
+        video_url: {
+          english: audioData.audio[0].audioContent,
+        },
+      },
+    })
 
     res.write(`data: Generating Images\n\n`)
 
@@ -60,6 +76,15 @@ class Processor {
       console.log("Client Closed Conn")
       res.end()
     })
+  }
+
+  static async uploadFile(file_name: string) {
+    const fileBuffer = fs.readFileSync(`../nodejs_backend/${file_name}`)
+    const file = new File([fileBuffer], file_name)
+
+    const response = await utapi.uploadFiles(file)
+    console.log(response.data)
+    console.log(response.error)
   }
 
   static async processText(req: Request, res: Response) {}

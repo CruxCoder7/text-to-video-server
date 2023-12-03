@@ -1,11 +1,9 @@
 import cors from "cors"
 import { config } from "dotenv"
 import express, { urlencoded } from "express"
-import { createUploadthingExpressHandler } from "uploadthing/express"
 import { GPT } from "./gpt"
 import processRouter from "./routes/process"
 import uploadRouter from "./routes/upload"
-import { fileUploadRouter } from "./routes/uploadthing"
 config()
 
 const app = express()
@@ -13,13 +11,6 @@ const app = express()
 app.use(cors())
 app.use(express.json())
 app.use(urlencoded({ extended: true }))
-
-app.use(
-  "/api/uploadthing",
-  createUploadthingExpressHandler({
-    router: fileUploadRouter,
-  })
-)
 
 app.use("/upload", uploadRouter)
 app.use("/process", processRouter)
