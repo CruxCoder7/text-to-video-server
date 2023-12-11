@@ -13,7 +13,11 @@ const isValidImage = (img: string) => {
 
 const api_key = process.env.SERP_API_KEY as string
 
-export async function GenerateImages(img_prompt: string, count: number) {
+export async function GenerateImages(
+  img_prompt: string,
+  count: number,
+  video_id: string
+) {
   const res = await fetch(
     `${process.env.SERPAPI_ENDPOINT}&q=${img_prompt}&api_key=${api_key}&gl=in&ijn=1`
   )
@@ -48,7 +52,7 @@ export async function GenerateImages(img_prompt: string, count: number) {
 
       return new Promise((resolve, reject) => {
         writer.on("finish", () => {
-          queue.add("imageQueue", { imageUrl: filePath })
+          queue.add("imageQueue", { imageUrl: filePath, video_id })
           resolve(true)
         })
         writer.on("error", reject)

@@ -31,16 +31,25 @@ export class Esrgan {
       scale: data.scale || 2,
     }
 
-    return axios({
-      url: this.url,
-      data: JSON.stringify(data),
-      method: "post",
-      responseType: "stream",
-      headers: {
-        "Access-Control-Allow-Origin": "*",
-        "Content-Type": "application/json",
-        "x-api-key": `${this.apiKey}`,
-      },
-    })
+    try {
+      const req = await axios({
+        url: this.url,
+        data: JSON.stringify(data),
+        method: "post",
+        responseType: "stream",
+        headers: {
+          "Access-Control-Allow-Origin": "*",
+          "Content-Type": "application/json",
+          "x-api-key": `${this.apiKey}`,
+        },
+      })
+
+      if (req.status === 429) this.generate(data)
+
+      return req
+    } catch (error) {
+      console.log(error)
+      return
+    }
   }
 }

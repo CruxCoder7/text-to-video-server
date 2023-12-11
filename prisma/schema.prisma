@@ -32,6 +32,7 @@ type videos {
 model video {
   id              String   @id @default(auto()) @map("_id") @db.ObjectId
   content         String
+  title           String
   images          String[]
   enhanced_images String[]
   video_url       videos

@@ -36,7 +36,7 @@ export const EnhanceImage = async (image: string, count: number) => {
   try {
     console.log("Enhancing: " + image)
     const response = await esr.generate({ image })
-    if (response.status === 200) {
+    if (response && response.status === 200) {
       const saveDirectory = "../enhanced_images"
       const fileName = `downloaded_image_${count}.jpg`
 

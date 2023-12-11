@@ -8,6 +8,7 @@ const headers = {
 type GPTResponse = {
   summarized_text: string
   image_prompts: { prompt: string }[]
+  video_title: string
 }
 
 export const GPT = async (input_text: string): Promise<GPTResponse> => {
@@ -16,16 +17,16 @@ export const GPT = async (input_text: string): Promise<GPTResponse> => {
                 generate prompts for each keyword that will help in finding an image thorugh google search.
                 You MUST ALWAYS return just a json with the summarized text with the key of summarized_text and image prompts as
                 an array of objects with key image_prompts and the every object inside the array should have just one key with the 
-                name prompt. Do not return the data in any other format. Do not return in markdown or plain text.
+                name prompt. Also give a title for the paragraph, with video_title as the key.Do not return the data in any other format. Do not return in markdown or plain text.
                 Only return JSON.
                 `
   const data = {
     prompt: `[INST] ${content} [/INST]\n`,
-    version: "02e509c789964a7ea8736978a43525956ef40397be9033abf9fd2badfe68c9e3",
+    model: "meta/llama-2-70b-chat",
     systemPrompt: "You are a helpful assistant.",
     temperature: 0.75,
     topP: 0.9,
-    maxTokens: 16000,
+    maxTokens: 800,
     image: null,
     audio: null,
   }

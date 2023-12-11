@@ -24,6 +24,20 @@ export const Translate = async (source: string, target_language: string) => {
     },
   }
 
+  if (target_language === "en") {
+    const data: TranslationResponse = {
+      taskType: "translation",
+      output: [
+        {
+          source: source,
+          target: source,
+        },
+      ],
+      config: null,
+    }
+    return data
+  }
+
   const translation_data = await fetch(
     process.env.TRANSLATION_ENDPOINT as string,
     {
