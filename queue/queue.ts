@@ -1,7 +1,6 @@
 import { Queue, Worker } from "bullmq"
 import { utapi } from "../routes/uploadthing"
 import fs from "fs"
-import prisma from "../db"
 
 const connectionOption = {
   connection: {
@@ -13,25 +12,13 @@ const queue = new Queue("imageQueue", connectionOption)
 const worker = new Worker(
   "imageQueue",
   async (job) => {
-    const { imageUrl: imgUrl, video_id } = job.data
+    const { imageUrl: imgUrl } = job.data
     const fileBuffer = fs.readFileSync(imgUrl)
     const file = new File([fileBuffer], imgUrl)
 
     try {
       const response = await utapi.uploadFiles(file)
-      if (response && response.data)
-        await prisma.video.update({
-          where: { id: video_id },
-          data: {
-            images: {
-              push: response.data.url,
-            },
-            enhanced_images: {
-              push: response.data.url,
-            },
-          },
-        })
-      return { success: true }
+      if (response && response.data) return { img: response.data.url }
     } catch (error) {
       console.log(error)
     }
@@ -39,7 +26,11 @@ const worker = new Worker(
   connectionOption
 )
 
-worker.on("ready", () => console.log("Worker ready"))
+worker.on("ready", async () => {
+  await queue.clean(0, 1000, "completed")
+  console.log("Worker ready")
+})
+
 worker.on("completed", () => console.log("Job Completed"))
 
-export default queue
+export { queue, worker }

@@ -9,6 +9,7 @@ import { TextToSpeech } from "../tts"
 import { utapi } from "../routes/uploadthing"
 import prisma from "../db"
 import axios from "axios"
+import { queue } from "../queue/queue"
 
 class Processor {
   static async processPdf(req: Request, res: Response) {
@@ -50,25 +51,12 @@ class Processor {
     fs.writeFileSync(outputFilePath, binaryData)
     const audio_url = await Processor.uploadFile(audio_name + ".wav", "audios")
 
-    const { id: video_id } = await prisma.video.create({
-      data: {
-        audio_url: {
-          english: audio_url,
-        },
-        content: gpt_response.summarized_text,
-        title: gpt_response.video_title || "Backend Video 2",
-        video_url: {
-          english: audio_url,
-        },
-      },
-    })
-
     res.write(`data:audio${audio_url}\n\n`)
     res.write(`data: Generating Images\n\n`)
 
     let img_index = 1
     for (const img_prompt of img_prompts) {
-      await GenerateImages(img_prompt, img_index, video_id)
+      await GenerateImages(img_prompt, img_index)
       img_index += 1
     }
 
@@ -87,7 +75,6 @@ class Processor {
 
     res.write(`data: Generating video\n\n`)
     const data = await axios.post("http://localhost:5555/video", {
-      video_id,
       video_name,
       audio_name,
     })
@@ -95,18 +82,28 @@ class Processor {
     console.log(data.data)
 
     const video_url = await Processor.uploadFile(video_name + ".mp4", "videos")
-    await prisma.video.update({
-      where: {
-        id: video_id,
-      },
+    res.write(`data:video${video_url}\n\n`)
+
+    const jobs = await queue.getCompleted()
+    console.log(jobs)
+
+    const img_urls = jobs.map((job) => job.returnvalue.img)
+    console.log(img_urls)
+
+    await prisma.video.create({
       data: {
+        audio_url: {
+          english: audio_url,
+        },
         video_url: {
           english: video_url,
         },
+        title: gpt_response.video_title,
+        content: gpt_response.summarized_text,
+        images: img_urls,
+        enhanced_images: img_urls,
       },
     })
-
-    res.write(`data:video${video_url}\n\n`)
 
     res.end()
     res.on("close", () => {

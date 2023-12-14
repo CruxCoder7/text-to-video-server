@@ -2,7 +2,7 @@ import axios from "axios"
 import { createWriteStream, existsSync, mkdirSync } from "fs"
 import { join } from "path"
 import dotenv from "dotenv"
-import queue from "./queue/queue"
+import { queue } from "./queue/queue"
 dotenv.config()
 
 const isValidImage = (img: string) => {
@@ -13,11 +13,7 @@ const isValidImage = (img: string) => {
 
 const api_key = process.env.SERP_API_KEY as string
 
-export async function GenerateImages(
-  img_prompt: string,
-  count: number,
-  video_id: string
-) {
+export async function GenerateImages(img_prompt: string, count: number) {
   const res = await fetch(
     `${process.env.SERPAPI_ENDPOINT}&q=${img_prompt}&api_key=${api_key}&gl=in&ijn=1`
   )
@@ -52,7 +48,7 @@ export async function GenerateImages(
 
       return new Promise((resolve, reject) => {
         writer.on("finish", () => {
-          queue.add("imageQueue", { imageUrl: filePath, video_id })
+          queue.add("imageQueue", { imageUrl: filePath })
           resolve(true)
         })
         writer.on("error", reject)
