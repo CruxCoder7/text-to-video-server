@@ -105,6 +105,8 @@ class Processor {
       },
     })
 
+    await queue.clean(0, 1000, "completed")
+
     res.end()
     res.on("close", () => {
       console.log("Client Closed Conn")
