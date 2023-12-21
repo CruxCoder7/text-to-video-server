@@ -3,7 +3,11 @@ import { Request, Response } from "express"
 
 class Videos {
   static async getAll(req: Request, res: Response) {
-    const videos = await prisma.video.findMany()
+    const videos = await prisma.video.findMany({
+      orderBy: {
+        id: "desc",
+      },
+    })
     return res.json(videos)
   }
 
