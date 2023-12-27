@@ -2,7 +2,7 @@ import axios from "axios"
 import { createWriteStream, existsSync, mkdirSync } from "fs"
 import { join } from "path"
 import dotenv from "dotenv"
-import { queue } from "./queue/queue"
+import { QUEUE_NAMES, imageQueue } from "./queue/queue"
 dotenv.config()
 
 const isValidImage = (img: string) => {
@@ -48,7 +48,7 @@ export async function GenerateImages(img_prompt: string, count: number) {
 
       return new Promise((resolve, reject) => {
         writer.on("finish", () => {
-          queue.add("imageQueue", { imageUrl: filePath })
+          imageQueue.add(QUEUE_NAMES.imageQueue, { imageUrl: filePath })
           resolve(true)
         })
         writer.on("error", reject)

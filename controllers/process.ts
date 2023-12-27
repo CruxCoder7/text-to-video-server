@@ -9,11 +9,15 @@ import { TextToSpeech } from "../tts"
 import { utapi } from "../routes/uploadthing"
 import prisma from "../db"
 import axios from "axios"
-import { queue } from "../queue/queue"
+import { QUEUE_NAMES, imageQueue, videoQueue } from "../queue/queue"
+import { Job } from "bullmq"
+import { ObjectId } from "mongodb"
 
 class Processor {
   static async processPdf(req: Request, res: Response) {
     res.setHeader("Content-Type", "text/event-stream")
+
+    const video_id = new ObjectId().toString()
 
     const pdfFilePath = req.file?.path
     const pdfBuffer = fs.readFileSync(pdfFilePath as string)
@@ -73,6 +77,14 @@ class Processor {
       gpt_response.video_title ? `${gpt_response.video_title}_video` : "Video"
     }`
 
+    videoQueue.add(QUEUE_NAMES.videoQueue, {
+      audio_name,
+      video_name,
+      video_id,
+      summarized_text: gpt_response.summarized_text,
+      target_language: "ta",
+    })
+
     res.write(`data: Generating video\n\n`)
     const data = await axios.post("http://localhost:5555/video", {
       video_name,
@@ -84,14 +96,17 @@ class Processor {
     const video_url = await Processor.uploadFile(video_name + ".mp4", "videos")
     res.write(`data:video${video_url}\n\n`)
 
-    const jobs = await queue.getCompleted()
+    const jobs = await imageQueue.getCompleted()
     console.log(jobs)
 
-    const img_urls = jobs.map((job) => job.returnvalue.img)
+    const img_urls: string[] = jobs.map(
+      (job: Job<{}, { img: string }>) => job.returnvalue.img
+    )
     console.log(img_urls)
 
     await prisma.video.create({
       data: {
+        id: video_id,
         audio_url: {
           english: audio_url,
         },
@@ -105,7 +120,7 @@ class Processor {
       },
     })
 
-    await queue.clean(0, 1000, "completed")
+    await imageQueue.clean(0, 1000, "completed")
 
     res.end()
     res.on("close", () => {
