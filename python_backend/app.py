@@ -1,21 +1,10 @@
 from flask import Flask, request
-from moviepy.editor import *
-from PIL import Image
-import glob
-import numpy as np
 from moviepy.editor import ImageClip, concatenate_videoclips
 from moviepy.audio.io.AudioFileClip import AudioFileClip
-from flask_pymongo import PyMongo
-from bson.objectid import ObjectId
-import dotenv
 from scipy.io import wavfile
-
+import os
 
 app = Flask(__name__)
-
-mongo_uri = dotenv.get_key('./.env', 'MONGO_URI')
-app.config['MONGO_URI'] = mongo_uri
-mongo = PyMongo(app)
 
 image_folder = "C:\Programming\SIH\images"
 
