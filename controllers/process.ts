@@ -25,10 +25,7 @@ class Processor {
     const pdfText = await PdfParse(pdfBuffer)
     res.write(`data: Summarizing \n\n`)
 
-    await Processor.uploadFile(
-      `../nodejs_backend/${pdfFilePath}`,
-      pdfFilePath as string
-    )
+    await Processor.uploadFile(`./${pdfFilePath}`, pdfFilePath as string)
 
     const gpt_response = await GPT(pdfText.text as unknown as string)
     res.write(`data:summary${gpt_response.summarized_text}\n\n`)
