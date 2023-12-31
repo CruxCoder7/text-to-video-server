@@ -6,8 +6,7 @@ import os
 
 app = Flask(__name__)
 
-image_folder = "C:\Programming\SIH\images"
-
+image_folder = "../../images"
 
 @app.route('/', methods=['GET', 'POST'])
 def home():
@@ -19,19 +18,18 @@ def generate_video():
     data = request.get_json()
     video_name = data['video_name']
     audio_name = data['audio_name']
-    audio_path = f"C:\\Programming\\SIH\\audios\\{audio_name}.wav"
+    audio_path = f"../../audios/{audio_name}.wav"
 
     Fs, data = wavfile.read(audio_path)
     n = len(data)
     total_audio_duration = n / Fs
 
-    frame_rate = 24
     image_files = [os.path.join(image_folder, filename) for filename in os.listdir(
         image_folder) if filename.endswith(('.jpg', '.png', '.jpeg'))]
     image_duration = total_audio_duration/len(image_files)
     image_clips = []
 
-    output_video_path = f"C:\\Programming\\SIH\\videos\\{video_name}.mp4"
+    output_video_path = f"../../videos/{video_name}.mp4"
 
     for image_path in image_files:
         image_clip = ImageClip(image_path)
@@ -47,4 +45,5 @@ def generate_video():
 
 
 if __name__ == "__main__":
+    print(os.getcwd())
     app.run(port=5555, debug=True, threaded=True)
