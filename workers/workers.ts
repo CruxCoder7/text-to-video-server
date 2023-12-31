@@ -46,8 +46,8 @@ export async function videoQueueWorkerJob(job: Job<VideoQueueJobData>) {
   const outputFilePath = `../audios/${audio_name}_tamil.wav`
   fs.writeFileSync(outputFilePath, binaryData)
   const audio_url = await Processor.uploadFile(
-    audio_name + "_tamil" + ".wav",
-    "audios"
+    outputFilePath,
+    audio_name + "_tamil.wav"
   )
 
   await axios.post("http://localhost:5555/video", {
@@ -56,20 +56,22 @@ export async function videoQueueWorkerJob(job: Job<VideoQueueJobData>) {
   })
 
   const video_url = await Processor.uploadFile(
-    video_name + "_tamil" + ".mp4",
-    "videos"
+    `../videos/${video_name}_tamil.mp4`,
+    video_name + "_tamil.mp4"
   )
+
+  console.log("SEC WRITE")
 
   await prisma.video.update({
     where: { id: video_id },
     data: {
       audio_url: {
-        set: {
+        update: {
           tamil: audio_url,
         },
       },
       video_url: {
-        set: {
+        update: {
           tamil: video_url,
         },
       },

@@ -25,7 +25,10 @@ class Processor {
     const pdfText = await PdfParse(pdfBuffer)
     res.write(`data: Summarizing \n\n`)
 
-    await Processor.uploadFile(pdfFilePath as string, "nodejs_backend")
+    await Processor.uploadFile(
+      `../nodejs_backend/${pdfFilePath}`,
+      pdfFilePath as string
+    )
 
     const gpt_response = await GPT(pdfText.text as unknown as string)
     res.write(`data:summary${gpt_response.summarized_text}\n\n`)
@@ -53,7 +56,10 @@ class Processor {
     const binaryData = Buffer.from(audioData.audio[0].audioContent, "base64")
     const outputFilePath = `../audios/${audio_name}.wav`
     fs.writeFileSync(outputFilePath, binaryData)
-    const audio_url = await Processor.uploadFile(audio_name + ".wav", "audios")
+    const audio_url = await Processor.uploadFile(
+      `../audios/${audio_name}.wav`,
+      audio_name + ".wav"
+    )
 
     res.write(`data:audio${audio_url}\n\n`)
     res.write(`data: Generating Images\n\n`)
@@ -93,7 +99,11 @@ class Processor {
 
     console.log(data.data)
 
-    const video_url = await Processor.uploadFile(video_name + ".mp4", "videos")
+    const video_url = await Processor.uploadFile(
+      `../videos/${video_name}.mp4`,
+      video_name + ".mp4"
+    )
+
     res.write(`data:video${video_url}\n\n`)
 
     const jobs = await imageQueue.getCompleted()
@@ -103,6 +113,7 @@ class Processor {
       (job: Job<{}, { img: string }>) => job.returnvalue.img
     )
     console.log(img_urls)
+    console.log("MAIN WRITE")
 
     await prisma.video.create({
       data: {
@@ -129,8 +140,8 @@ class Processor {
     })
   }
 
-  static async uploadFile(file_name: string, path: string) {
-    const fileBuffer = fs.readFileSync(`../${path}/${file_name}`)
+  static async uploadFile(path: string, file_name: string) {
+    const fileBuffer = fs.readFileSync(path)
     const file = new File([fileBuffer], file_name)
     const data = await utapi.uploadFiles(file)
     console.log(data)

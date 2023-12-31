@@ -45,5 +45,4 @@ def generate_video():
 
 
 if __name__ == "__main__":
-    print(os.getcwd())
     app.run(port=5555, debug=True, threaded=True)
